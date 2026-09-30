@@ -1,0 +1,3 @@
+-- Retail Sales Data Cleaning using PostgreSQL
+-- Stage 2: Identify Data Quality Issues
+-- Purpose: Identify issues in the raw tables

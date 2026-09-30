@@ -293,6 +293,197 @@ ORDER BY city;
 
 
 
+-- 6. Identify Inconsistent Product Categories
+
+SELECT
+    category,
+    COUNT(*) AS record_count
+FROM raw.products
+GROUP BY category
+ORDER BY category;
+
+
+
+-- 7. Identify Inconsistent Order Statuses
+
+SELECT
+    status,
+    COUNT(*) AS record_count
+FROM raw.orders
+GROUP BY status
+ORDER BY status;
+
+
+
+-- 8. Check Customer Signup Date Format
+
+SELECT
+    customer_id,
+    customer_name,
+    TO_CHAR(signup_date, 'YYYY-MM-DD') AS signup_date
+FROM raw.customers
+WHERE TO_CHAR(signup_date, 'YYYY-MM-DD') !~ '^\d{4}-\d{2}-\d{2}$';
+
+
+
+-- 9. Identify Invalid Product Prices
+
+SELECT
+    product_id,
+    product_name,
+    category,
+    price
+FROM raw.products
+WHERE price < 0
+ORDER BY product_id;
+
+
+
+-- 10. Identify Invalid Order Discount Percentages
+
+SELECT
+    order_id,
+    discount_pct
+FROM raw.orders
+WHERE discount_pct < 0
+   OR discount_pct > 1
+ORDER BY order_id;
+
+
+-- 11. Identify Invalid Order Item Quantities
+
+SELECT
+    order_item_id,
+    order_id,
+    product_id,
+    quantity
+FROM raw.order_items
+WHERE quantity <= 0
+ORDER BY order_item_id;
+
+
+
+-- 12. Identify Invalid Order Item Unit Prices
+
+SELECT
+    order_item_id,
+    order_id,
+    product_id,
+    unit_price
+FROM raw.order_items
+WHERE unit_price <= 0
+ORDER BY order_item_id;
+
+
+
+-- 13. Identify Invalid Order Item Discount Percentages
+
+SELECT
+    order_item_id,
+    order_id,
+    discount_pct
+FROM raw.order_items
+WHERE discount_pct < 0
+   OR discount_pct > 1
+ORDER BY order_item_id;
+
+
+
+-- 14. Identify Invalid Order Amounts
+
+SELECT
+    order_id,
+    order_amount
+FROM raw.orders
+WHERE order_amount < 0
+ORDER BY order_id;
+
+
+
+-- 15. Identify Order Item Calculation Mismatches
+
+SELECT
+    order_item_id,
+    order_id,
+    quantity,
+    unit_price,
+    discount_pct,
+    total_amount,
+    ROUND(quantity * unit_price * (1 - discount_pct), 2)
+        AS expected_total_amount
+FROM raw.order_items
+WHERE ABS(
+    total_amount -
+    ROUND(quantity * unit_price * (1 - discount_pct), 2)
+) > 0.01
+ORDER BY order_item_id;
+
+
+
+-- 16. Check Orders Linked to Non-existent Customers
+
+SELECT
+    o.order_id,
+    o.customer_id
+FROM raw.orders o
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM raw.customers c
+    WHERE c.customer_id = o.customer_id
+);
+
+
+
+-- 17. Check Order Items Linked to Non-existent Orders
+
+SELECT
+    oi.order_item_id,
+    oi.order_id
+FROM raw.order_items oi
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM raw.orders o
+    WHERE o.order_id = oi.order_id
+);
+
+
+
+-- 18. Check Order Items Linked to Non-existent Products
+
+SELECT
+    oi.order_item_id,
+    oi.product_id
+FROM raw.order_items oi
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM raw.products p
+    WHERE p.product_id = oi.product_id
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

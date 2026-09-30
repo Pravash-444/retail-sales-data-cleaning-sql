@@ -90,3 +90,214 @@ CROSS JOIN LATERAL (
 GROUP BY column_name
 
 ORDER BY table_name, column_name;
+
+
+
+
+-- 2. Identify Duplicate Records
+
+-- Customers: Check exact duplicate records
+
+SELECT
+    customer_id,
+    customer_name,
+    email,
+    city,
+    signup_date,
+    COUNT(*) AS occurrences
+FROM raw.customers
+GROUP BY
+    customer_id,
+    customer_name,
+    email,
+    city,
+    signup_date
+HAVING COUNT(*) > 1
+ORDER BY customer_id;
+
+
+
+-- Duplicate check: Products
+
+SELECT
+    product_id,
+    product_name,
+    category,
+    price,
+    COUNT(*) AS occurrences
+FROM raw.products
+GROUP BY
+    product_id,
+    product_name,
+    category,
+    price
+HAVING COUNT(*) > 1;
+
+
+
+-- Duplicate check: Orders
+
+SELECT
+    order_id,
+    customer_id,
+    order_date,
+    status,
+    discount_pct,
+    order_amount,
+    COUNT(*) AS occurrences
+FROM raw.orders
+GROUP BY
+    order_id,
+    customer_id,
+    order_date,
+    status,
+    discount_pct,
+    order_amount
+HAVING COUNT(*) > 1;
+
+
+
+-- Duplicate check: Order Items
+
+SELECT
+    order_item_id,
+    order_id,
+    product_id,
+    quantity,
+    unit_price,
+    discount_pct,
+    total_amount,
+    COUNT(*) AS occurrences
+FROM raw.order_items
+GROUP BY
+    order_item_id,
+    order_id,
+    product_id,
+    quantity,
+    unit_price,
+    discount_pct,
+    total_amount
+HAVING COUNT(*) > 1;
+
+
+
+-- Duplicate check: Payments
+
+SELECT
+    payment_id,
+    order_id,
+    payment_date,
+    payment_method,
+    payment_amount,
+    payment_status,
+    COUNT(*) AS occurrences
+FROM raw.payments
+GROUP BY
+    payment_id,
+    order_id,
+    payment_date,
+    payment_method,
+    payment_amount,
+    payment_status
+HAVING COUNT(*) > 1;
+
+
+
+
+-- 3. Identify Invalid Email Addresses
+
+SELECT
+    customer_id,
+    customer_name,
+    email
+FROM raw.customers
+WHERE email IS NOT NULL
+  AND BTRIM(email) <> ''
+  AND email !~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+ORDER BY customer_id;
+
+
+
+-- 4. Identify Whitespace Issues in All Tables
+
+SELECT
+    'customers' AS table_name,
+    customer_id::TEXT AS record_id,
+    column_name,
+    '[' || value || ']' AS original_value
+FROM raw.customers
+CROSS JOIN LATERAL (
+    VALUES
+        ('customer_name', customer_name),
+        ('email', email),
+        ('city', city)
+) AS t(column_name, value)
+WHERE value IS NOT NULL
+  AND value <> TRIM(value)
+
+UNION ALL
+
+SELECT
+    'products',
+    product_id::TEXT,
+    column_name,
+    '[' || value || ']'
+FROM raw.products
+CROSS JOIN LATERAL (
+    VALUES
+        ('product_name', product_name),
+        ('category', category)
+) AS t(column_name, value)
+WHERE value IS NOT NULL
+  AND value <> TRIM(value)
+
+UNION ALL
+
+SELECT
+    'orders',
+    order_id::TEXT,
+    'status',
+    '[' || status || ']'
+FROM raw.orders
+WHERE status IS NOT NULL
+  AND status <> TRIM(status)
+
+UNION ALL
+
+SELECT
+    'payments',
+    payment_id::TEXT,
+    column_name,
+    '[' || value || ']'
+FROM raw.payments
+CROSS JOIN LATERAL (
+    VALUES
+        ('payment_method', payment_method),
+        ('payment_status', payment_status)
+) AS t(column_name, value)
+WHERE value IS NOT NULL
+  AND value <> TRIM(value)
+
+ORDER BY table_name, record_id, column_name;
+
+
+
+-- 5. Identify Inconsistent Customer Cities
+
+SELECT
+    city,
+    COUNT(*) AS record_count
+FROM raw.customers
+GROUP BY city
+ORDER BY city;
+
+
+
+
+
+
+
+
+
+
+

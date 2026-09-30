@@ -1,0 +1,3 @@
+-- Retail Sales Data Cleaning using PostgreSQL
+-- File: 01_data_profiling.sql
+-- Purpose: Initial data profiling of raw tables

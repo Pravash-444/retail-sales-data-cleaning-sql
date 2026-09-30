@@ -462,33 +462,46 @@ WHERE NOT EXISTS (
 
 
 
+-- 19. Identify Inconsistent Order Date Formats
+
+SELECT
+    order_id,
+    order_date
+FROM raw.orders
+WHERE order_date IS NOT NULL
+  AND BTRIM(order_date) !~ '^\d{4}-\d{2}-\d{2}$'
+ORDER BY order_id;
+
+
+-- 20. Identify Inconsistent Payment Date Formats
+
+SELECT
+    payment_id,
+    payment_date
+FROM raw.payments
+WHERE payment_date IS NOT NULL
+  AND BTRIM(payment_date) !~ '^\d{4}-\d{2}-\d{2}$'
+ORDER BY payment_id;
 
 
 
+-- 21. Identify Inconsistent Payment Methods
+
+SELECT
+    payment_method,
+    COUNT(*) AS record_count
+FROM raw.payments
+GROUP BY payment_method
+ORDER BY payment_method;
 
 
 
+-- 22. Identify Inconsistent Payment Statuses
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+SELECT
+    payment_status,
+    COUNT(*) AS record_count
+FROM raw.payments
+GROUP BY payment_status
+ORDER BY payment_status;
 

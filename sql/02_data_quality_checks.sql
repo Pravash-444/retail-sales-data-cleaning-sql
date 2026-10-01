@@ -361,6 +361,21 @@ FROM raw.order_items
 WHERE quantity <= 0
 ORDER BY order_item_id;
 
+-- Investigate whether stored totals support
+-- converting negative quantities to positive
+
+SELECT
+    order_item_id,
+    quantity,
+    unit_price,
+    discount_pct,
+    total_amount AS stored_total_amount,
+    ROUND(
+        ABS(quantity) * unit_price * (1 - discount_pct), 2
+    ) AS calculated_total_amount
+FROM clean.order_items
+WHERE order_item_id IN (1, 2, 3)
+ORDER BY order_item_id;
 
 
 -- 12. Identify Invalid Order Item Unit Prices
@@ -387,6 +402,25 @@ WHERE discount_pct < 0
    OR discount_pct > 1
 ORDER BY order_item_id;
 
+-- Compare stored totals with calculations
+-- using the existing and suspected corrected discounts
+
+SELECT
+    order_item_id,
+    quantity,
+    unit_price,
+    discount_pct,
+    total_amount AS stored_total_amount,
+    ROUND(
+        quantity * unit_price * (1 - discount_pct), 2
+    ) AS calculated_at_existing_discount,
+    ROUND(
+        quantity * unit_price * (1 - 0.20), 2
+    ) AS calculated_at_0_20
+FROM clean.order_items
+WHERE order_item_id IN (5, 10, 18)
+ORDER BY order_item_id;
+
 
 
 -- 14. Identify Invalid Order Amounts
@@ -397,8 +431,6 @@ SELECT
 FROM raw.orders
 WHERE order_amount < 0
 ORDER BY order_id;
-
-
 
 -- 15. Identify Order Item Calculation Mismatches
 
@@ -416,6 +448,21 @@ WHERE ABS(
     total_amount -
     ROUND(quantity * unit_price * (1 - discount_pct), 2)
 ) > 0.01
+ORDER BY order_item_id;
+
+-- Identify and compare mismatched stored totals
+
+SELECT
+    order_item_id,
+    quantity,
+    unit_price,
+    discount_pct,
+    total_amount AS stored_total_amount,
+    ROUND(
+        quantity * unit_price * (1 - discount_pct), 2
+    ) AS calculated_total_amount
+FROM clean.order_items
+WHERE order_item_id IN (4, 6, 7)
 ORDER BY order_item_id;
 
 

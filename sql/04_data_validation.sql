@@ -1,0 +1,3 @@
+-- Retail Sales Data Cleaning using PostgreSQL
+-- Stage 4: Final Data Validation
+-- Purpose: Verify the cleaned data

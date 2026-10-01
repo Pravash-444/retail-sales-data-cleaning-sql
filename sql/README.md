@@ -8,4 +8,3 @@ The scripts cover:
 - Data quality checks
 - Data cleaning
 - Data validation
-- Adding database constraints

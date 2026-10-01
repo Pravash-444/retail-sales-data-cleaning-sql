@@ -1,0 +1,3 @@
+-- Retail Sales Data Cleaning using PostgreSQL
+-- Stage 3: Data Cleaning
+-- Purpose: Clean and standardize data in the clean schema

@@ -162,8 +162,6 @@ END
 WHERE order_id IN (1005, 1025, 1045);
 
 
-
-
 -- 18. Validate order date formats
 
 SELECT
@@ -207,6 +205,7 @@ WHERE discount_pct < 0
 
 
 -- 23. Recalculate mismatched order item totals
+
 UPDATE clean.order_items
 SET total_amount = ROUND(
     quantity * unit_price * (1 - discount_pct), 2
@@ -214,6 +213,7 @@ SET total_amount = ROUND(
 WHERE order_item_id IN (4, 6, 7);
 
 -- 24. Validate order item total calculations
+
 SELECT
     order_item_id,
     quantity,
@@ -229,11 +229,13 @@ WHERE ABS(
 
 
 -- 25. Standardize payment methods
+
 UPDATE clean.payments
 SET payment_method = INITCAP(LOWER(TRIM(payment_method)))
 WHERE payment_method IS NOT NULL;
 
 -- 26. Validate payment methods
+
 SELECT
     payment_method,
     COUNT(*) AS total_records
@@ -242,11 +244,13 @@ GROUP BY payment_method
 ORDER BY payment_method;
 
 -- 27. Standardize payment statuses
+
 UPDATE clean.payments
 SET payment_status = INITCAP(LOWER(TRIM(payment_status)))
 WHERE payment_status IS NOT NULL;
 
 -- 28. Validate payment statuses
+
 SELECT
     payment_status,
     COUNT(*) AS total_records
@@ -268,11 +272,13 @@ END
 WHERE payment_id IN (11006, 11026, 11046);
 
 -- 30. Validate payment date formats
+
 SELECT payment_id, payment_date
 FROM clean.payments
 WHERE payment_date !~ '^\d{4}-\d{2}-\d{2}$';
 
 -- 31. Compare raw and clean table row counts
+
 SELECT
     'customers' AS table_name,
     (SELECT COUNT(*) FROM raw.customers) AS raw_rows,
@@ -299,7 +305,8 @@ SELECT
     (SELECT COUNT(*) FROM clean.payments);
 
 
--- 33. Add primary key constraints
+-- 32. Add primary key constraints
+
 ALTER TABLE clean.customers
 ADD CONSTRAINT pk_customers PRIMARY KEY (customer_id);
 
@@ -316,7 +323,7 @@ ALTER TABLE clean.payments
 ADD CONSTRAINT pk_payments PRIMARY KEY (payment_id);
 
 
--- 34. Add foreign key constraints
+-- 33. Add foreign key constraints
 
 ALTER TABLE clean.orders
 ADD CONSTRAINT fk_orders_customers
@@ -338,7 +345,7 @@ ADD CONSTRAINT fk_payments_orders
 FOREIGN KEY (order_id)
 REFERENCES clean.orders (order_id);
 
--- 35. Add CHECK constraints
+-- 34. Add CHECK constraints
 
 ALTER TABLE clean.products
 ADD CONSTRAINT chk_products_price

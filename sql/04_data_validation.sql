@@ -93,3 +93,14 @@ SELECT
     ) AS inconsistent_dates
 FROM clean.payments;
 
+-- 7. Check existing constraints
+SELECT
+    tc.table_name,
+    tc.constraint_name,
+    tc.constraint_type
+FROM information_schema.table_constraints tc
+WHERE tc.constraint_schema = 'clean'
+ORDER BY
+    tc.table_name,
+    tc.constraint_type,
+    tc.constraint_name;
